@@ -21,7 +21,7 @@ dependencies:
       # --- Visualization & Physics ---
       - matplotlib==3.9.2    
       - seaborn==0.13.2
-      - panama
+      # - panama #* Consultar con Luis el uso de esta libreria, ya que no se encuentra en pip ni conda-forge.
       # --- Utils & Notebook ---
       - gdown    
       - tqdm    
