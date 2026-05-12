@@ -1,33 +1,36 @@
 # Use this file to create a GPU-supported environment (If you don't have an NVIDIA GPU, use the environment-cpu.yml file) for the CONDOR EAS-Reconstruction project. Make sure you have Anaconda or Miniconda installed, and then run the following command in your terminal:
 name: condor-cnn-trans
-channels:  
-  - conda-forge  
+channels:
+  - conda-forge
   - defaults
-dependencies:  
-  - python=3.10  
+dependencies:
+  - python=3.10
   # --- System & GPU Libraries ---
-  - cudatoolkit=11.2          
-  - cudnn=8.1  
-  - pip  
+  - cudatoolkit=11.2
+  - cudnn=8.1
+  - pip
   - pip:
       # --- Data Science Core ---
-      - numpy==1.26.4    
-      - pandas==2.2.3    
+      - numpy==1.26.4
+      - pandas==2.2.3
       - scipy
       # --- Machine Learning ---
-      - scikit-learn==1.5.2    
-      - tensorflow==2.10.0      
+      - scikit-learn==1.5.2
+      - tensorflow==2.10.0
       - keras-tuner==1.4.7
       # --- MLOps & Tracking ---
-      - mlflow
+      - mlflow==2.8.1
+      # --- Core Dependencies (Fijadas por compatibilidad) ---
+      - protobuf==3.19.6
+      - setuptools<70.0.0
       # --- Visualization & Physics ---
-      - matplotlib==3.9.2    
+      - matplotlib==3.9.2
       - seaborn==0.13.2
       # - panama #* Consultar con Luis el uso de esta libreria, ya que no se encuentra en pip ni conda-forge.
       # --- Utils & Notebook ---
-      - gdown    
-      - tqdm    
-      - ipywidgets    
+      - gdown
+      - tqdm
+      - ipywidgets
       - jupyter
       - notebook
       - papermill
