@@ -1,0 +1,501 @@
+{
+  "_meta": {
+    "generated_at": "2026-06-15T19:42:10.539865",
+    "kernel_mode": "hot",
+    "completed_weeks": [
+      "W1",
+      "W2",
+      "W3",
+      "W4",
+      "W5",
+      "W8"
+    ],
+    "pending_weeks": [
+      "W6",
+      "W7",
+      "W9"
+    ],
+    "w5_var_mapping": {
+      "shap_seq_summary": "shap_seq_summary",
+      "shap_global_summary": "shap_global_summary",
+      "phi_0": "phi0",
+      "additivity_error": "additivity_error",
+      "N_BG": "N_BG",
+      "N_SAMPLE": "N_SAMPLE",
+      "T_SHAP": "T_SHAP",
+      "SHAP_SEED": "SEED",
+      "GLOBAL_FEATURE_NAMES": "GLOBAL_FEATURE_NAMES"
+    },
+    "extraction_version": "v2.3"
+  },
+  "dataset": {
+    "total_events_balanced": 36792,
+    "train_size": 25754,
+    "val_size": 5518,
+    "test_size": 5520,
+    "split_ratios": "70 / 15 / 15",
+    "split_strategy": "stratified by (angle Ã— label), seed=42",
+    "energy_bins_GeV": [
+      "3E2",
+      "5E2",
+      "8E2"
+    ],
+    "angle_max_deg": 40.0,
+    "min_total_particles": 30,
+    "class_balance": "50/50 gamma/hadron (balanced sampling)",
+    "sequence_features": [
+      "detector_id",
+      "particle_count",
+      "t_bin",
+      "total_energy",
+      "x_center",
+      "y_center"
+    ],
+    "n_sequence_features": 6,
+    "global_features": [
+      "total_particles",
+      "total_energy",
+      "active_detectors",
+      "duration_tbin",
+      "energy_central"
+    ],
+    "n_global_features": 5,
+    "max_sequence_length": 466,
+    "padding": "post-padding, mask_value=0.0 (Masking layer)",
+    "simulation_framework": "CORSIKA + EPOS (hadronic) + GEISHA (low-E)"
+  },
+  "architecture": {
+    "model_name": "CONDOR_BayesianClassifier",
+    "total_params": 453953,
+    "inputs": {
+      "sequence_input": "(batch, 466, 6)",
+      "global_input": "(batch, 5)"
+    },
+    "cnn_branch": {
+      "n_conv_layers": 3,
+      "filters": 128,
+      "kernel_size": 7,
+      "padding": "same",
+      "activation": "elu",
+      "batch_norm": true,
+      "max_pool": "pool_size=2, padding=same",
+      "dense_layers": [
+        128,
+        256,
+        128
+      ],
+      "dropout_type": "MCSpatialDropout1D",
+      "dropout_rate": 0.3
+    },
+    "raw_branch": {
+      "projection_dim": 128,
+      "activation": "elu"
+    },
+    "transformer_blocks": {
+      "n_blocks": 2,
+      "normalization": "Pre-LN",
+      "mha_heads": 1,
+      "mha_key_dim": 32,
+      "ffn_hidden_dim": 128,
+      "dropout_cnn_block": "MCSpatialDropout1D(0.10)",
+      "dropout_raw_block": "MCDropout(0.10)",
+      "pooling": "GlobalAveragePooling1D"
+    },
+    "fusion_head": {
+      "concatenation": "feat_cnn(128) || feat_raw(128) || global(5) â†’ 261-dim",
+      "dense_layers": [
+        128
+      ],
+      "activation": "elu",
+      "dropout_head": "MCDropout(0.40) Ã— 2",
+      "output": "Dense(1, sigmoid, float32)"
+    },
+    "mcdropout_total_layers": 7
+  },
+  "training": {
+    "optimizer": "Adam",
+    "learning_rate_initial": 0.0005,
+    "clipnorm": 1.0,
+    "loss_function": "binary_crossentropy",
+    "batch_size": 32,
+    "max_epochs_configured": 100,
+    "actual_epochs_run": 33,
+    "best_epoch_1indexed": 18,
+    "best_val_loss": 0.13701020181179047,
+    "best_train_loss": 0.09222698211669922,
+    "best_val_f1": 0.9708490967750549,
+    "best_val_accuracy": 0.9708227515220642,
+    "callbacks": {
+      "EarlyStopping": {
+        "monitor": "val_loss",
+        "patience": 15
+      },
+      "ReduceLROnPlateau": {
+        "factor": 0.5,
+        "patience": 7,
+        "min_lr": 1e-06
+      }
+    }
+  },
+  "bayesian": {
+    "framework": "Monte Carlo Dropout (Gal & Ghahramani, 2016)",
+    "MC_T_passes": 50,
+    "temperature_scaling": {
+      "T_opt": 1.2841091999632013,
+      "nll_val_at_T_opt": 0.11102388761273628
+    },
+    "sigma2_ep_stats": {
+      "gamma_mean": 0.0025636027567088604,
+      "gamma_median": 7.24321071174927e-05,
+      "gamma_std": 0.010739202611148357,
+      "hadron_mean": 0.00446263886988163,
+      "hadron_median": 2.2841467606227184e-10,
+      "hadron_std": 0.014164092019200325
+    }
+  },
+  "results": {
+    "discrimination": {
+      "auc_roc": 0.9888245406942674,
+      "accuracy": 0.9628623188405797,
+      "f1_macro": 0.9628503694231357,
+      "f1_gamma": 0.9635166399715251,
+      "f1_hadron": 0.9621840988747463,
+      "precision_gamma": 0.9455117010129235,
+      "recall_gamma": 0.9822206095791002,
+      "precision_hadron": 0.9815581482875423,
+      "recall_hadron": 0.9435600578871202,
+      "q_factor": 4.134431136836304,
+      "gamma_efficiency": 0.9822206095791002,
+      "hadron_contamination": 0.056439942112879886
+    },
+    "calibration": {
+      "ece_uncalibrated": 0.018130540019373628,
+      "ece_calibrated": 0.011533018936271495,
+      "ece_improvement_pct": 36.38899379749453,
+      "brier_uncalibrated": 0.030747708379810026,
+      "brier_calibrated": 0.030614132298563156,
+      "brier_reliability": 0.0009767084306313105,
+      "brier_resolution": 0.22005336998110409,
+      "nll_uncalibrated": 0.12756663323351025,
+      "nll_calibrated": 0.11955502420963353,
+      "nll_improvement_pct": 6.280332733412743
+    },
+    "bayesian_validity": {
+      "error_auroc": 0.8675428492760937,
+      "acc_at_90pct_coverage": 0.980877616747182,
+      "delta_acc_rejection": 0.01801529790660228
+    },
+    "per_energy_bin": {
+      "3E2": {
+        "n_test_samples": 1807,
+        "auc": 0.9931608595255254
+      },
+      "5E2": {
+        "n_test_samples": 1844,
+        "auc": 0.9895433280620506
+      },
+      "8E2": {
+        "n_test_samples": 1869,
+        "auc": 0.9839078696048479
+      }
+    }
+  },
+  "xai": {
+    "ablation": {
+      "strategy": "median",
+      "MC_T_per_eval": 30,
+      "baseline_accuracy": 0.9583333333333334,
+      "top3_features": [
+        {
+          "feature": "detector_id",
+          "task": null,
+          "strategy": "median",
+          "baseline_score": 0.9614130434782608,
+          "ablated_score": 0.5009057971014492,
+          "importance": 0.4605072463768116,
+          "relative_importance": 47.899001319012626
+        },
+        {
+          "feature": "total_energy",
+          "task": null,
+          "strategy": "median",
+          "baseline_score": 0.9614130434782608,
+          "ablated_score": 0.7282608695652174,
+          "importance": 0.23315217391304344,
+          "relative_importance": 24.25098925946862
+        },
+        {
+          "feature": "y_center",
+          "task": null,
+          "strategy": "median",
+          "baseline_score": 0.9614130434782608,
+          "ablated_score": 0.8643115942028986,
+          "importance": 0.09710144927536224,
+          "relative_importance": 10.09986809873751
+        }
+      ],
+      "all_features_ranked": [
+        {
+          "feature": "detector_id",
+          "importance": 0.4605072463768116,
+          "relative_importance": 47.899001319012626
+        },
+        {
+          "feature": "particle_count",
+          "importance": 0.002536231884057938,
+          "relative_importance": 0.2638025249670212
+        },
+        {
+          "feature": "t_bin",
+          "importance": 0.018840579710144856,
+          "relative_importance": 1.959675899755033
+        },
+        {
+          "feature": "total_energy",
+          "importance": 0.23315217391304344,
+          "relative_importance": 24.25098925946862
+        },
+        {
+          "feature": "x_center",
+          "importance": 0.08079710144927532,
+          "relative_importance": 8.403994723949497
+        },
+        {
+          "feature": "y_center",
+          "importance": 0.09710144927536224,
+          "relative_importance": 10.09986809873751
+        }
+      ]
+    },
+    "pfi": {
+      "n_repeats": 15,
+      "MC_T_per_repeat": 1,
+      "metric": "accuracy",
+      "top3_features": [
+        {
+          "feature": "sequence::detector_id",
+          "task": "particle",
+          "metric_name": "accuracy",
+          "baseline": 0.9583333333333334,
+          "permuted_mean": 0.6678502415458937,
+          "permuted_std": 0.0029734962450261543,
+          "importance_delta": 0.2904830917874397
+        },
+        {
+          "feature": "sequence::total_energy",
+          "task": "particle",
+          "metric_name": "accuracy",
+          "baseline": 0.9583333333333334,
+          "permuted_mean": 0.7004830917874395,
+          "permuted_std": 0.0051919826916132115,
+          "importance_delta": 0.25785024154589387
+        },
+        {
+          "feature": "sequence::x_center",
+          "task": "particle",
+          "metric_name": "accuracy",
+          "baseline": 0.9583333333333334,
+          "permuted_mean": 0.8167391304347825,
+          "permuted_std": 0.002760017638077498,
+          "importance_delta": 0.14159420289855085
+        }
+      ],
+      "all_features_ranked": [
+        {
+          "feature": "sequence::detector_id",
+          "importance_delta": 0.2904830917874397,
+          "permuted_mean": 0.6678502415458937,
+          "permuted_std": 0.0029734962450261543
+        },
+        {
+          "feature": "sequence::total_energy",
+          "importance_delta": 0.25785024154589387,
+          "permuted_mean": 0.7004830917874395,
+          "permuted_std": 0.0051919826916132115
+        },
+        {
+          "feature": "sequence::x_center",
+          "importance_delta": 0.14159420289855085,
+          "permuted_mean": 0.8167391304347825,
+          "permuted_std": 0.002760017638077498
+        },
+        {
+          "feature": "sequence::y_center",
+          "importance_delta": 0.13189613526570088,
+          "permuted_mean": 0.8264371980676325,
+          "permuted_std": 0.002602349750245396
+        },
+        {
+          "feature": "sequence::particle_count",
+          "importance_delta": 0.08964975845410617,
+          "permuted_mean": 0.8686835748792272,
+          "permuted_std": 0.001944969473330594
+        },
+        {
+          "feature": "sequence::t_bin",
+          "importance_delta": 0.06112318840579689,
+          "permuted_mean": 0.8972101449275365,
+          "permuted_std": 0.0021356185438058156
+        }
+      ]
+    },
+    "shap_sequence": {
+      "explainer": "shap.GradientExplainer",
+      "background_n": 200,
+      "explanation_n": 300,
+      "MC_runs_averaged": 10,
+      "top3_features": [
+        {
+          "feature": "y_center",
+          "mean_abs_shap": 0.006749051623046398,
+          "std_abs_shap": 0.0042606135830283165,
+          "mean_signed_shap": 0.006749051623046398
+        },
+        {
+          "feature": "total_energy",
+          "mean_abs_shap": 0.0064874617382884026,
+          "std_abs_shap": 0.0041357846930623055,
+          "mean_signed_shap": 0.0064874617382884026
+        },
+        {
+          "feature": "x_center",
+          "mean_abs_shap": 0.005087466910481453,
+          "std_abs_shap": 0.0035826819948852062,
+          "mean_signed_shap": 0.005087466910481453
+        }
+      ],
+      "all_features_ranked": [
+        {
+          "feature": "y_center",
+          "mean_abs_shap": 0.006749051623046398,
+          "std_abs_shap": 0.0042606135830283165,
+          "mean_signed_shap": 0.006749051623046398
+        },
+        {
+          "feature": "total_energy",
+          "mean_abs_shap": 0.0064874617382884026,
+          "std_abs_shap": 0.0041357846930623055,
+          "mean_signed_shap": 0.0064874617382884026
+        },
+        {
+          "feature": "x_center",
+          "mean_abs_shap": 0.005087466910481453,
+          "std_abs_shap": 0.0035826819948852062,
+          "mean_signed_shap": 0.005087466910481453
+        },
+        {
+          "feature": "detector_id",
+          "mean_abs_shap": 0.004333880729973316,
+          "std_abs_shap": 0.002107738982886076,
+          "mean_signed_shap": 0.004333880729973316
+        },
+        {
+          "feature": "t_bin",
+          "mean_abs_shap": 0.002533902646973729,
+          "std_abs_shap": 0.0016256896778941154,
+          "mean_signed_shap": 0.002533902646973729
+        },
+        {
+          "feature": "particle_count",
+          "mean_abs_shap": 0.00021360506070777774,
+          "std_abs_shap": 0.0003166941460222006,
+          "mean_signed_shap": 0.00021360506070777774
+        }
+      ]
+    },
+    "shap_global": {
+      "top3_features": [
+        {
+          "feature": "total_energy",
+          "mean_abs_shap": 0.03007555566728115,
+          "std_abs_shap": 0.022167682647705078,
+          "mean_signed": 0.0035733140539377928
+        },
+        {
+          "feature": "duration_tbin",
+          "mean_abs_shap": 0.00570764159783721,
+          "std_abs_shap": 0.006711975671350956,
+          "mean_signed": 0.0017597158439457417
+        },
+        {
+          "feature": "energy_central",
+          "mean_abs_shap": 0.0035287595819681883,
+          "std_abs_shap": 0.0060576205141842365,
+          "mean_signed": 0.001028368715196848
+        }
+      ],
+      "all_features_ranked": [
+        {
+          "feature": "total_energy",
+          "mean_abs_shap": 0.03007555566728115,
+          "std_abs_shap": 0.022167682647705078,
+          "mean_signed": 0.0035733140539377928
+        },
+        {
+          "feature": "duration_tbin",
+          "mean_abs_shap": 0.00570764159783721,
+          "std_abs_shap": 0.006711975671350956,
+          "mean_signed": 0.0017597158439457417
+        },
+        {
+          "feature": "energy_central",
+          "mean_abs_shap": 0.0035287595819681883,
+          "std_abs_shap": 0.0060576205141842365,
+          "mean_signed": 0.001028368715196848
+        },
+        {
+          "feature": "total_particles",
+          "mean_abs_shap": 0.003171642543748021,
+          "std_abs_shap": 0.002731801476329565,
+          "mean_signed": 0.00030359267839230597
+        },
+        {
+          "feature": "active_detectors",
+          "mean_abs_shap": 0.0008020360255613923,
+          "std_abs_shap": 0.0007165779243223369,
+          "mean_signed": 3.3797357900766656e-05
+        }
+      ]
+    },
+    "shap_additivity": {
+      "phi_0_baseline": 0.5048944354057312,
+      "mean_error": 0.12243747614372211,
+      "max_error": 0.5879756715148687,
+      "std_error": 0.09266132987725179,
+      "n_violations": 235,
+      "violation_pct": 78.33333333333333
+    },
+    "cross_method": {
+      "methods": [
+        "Ablation (W8)",
+        "PFI (W8)",
+        "SHAP (W5)"
+      ],
+      "consensus_all3": [
+        "total_energy"
+      ],
+      "consensus_2of3": [
+        "total_energy",
+        "x_center",
+        "detector_id",
+        "y_center"
+      ]
+    }
+  },
+  "figures": {
+    "W3_W4": {
+      "training_curves": "pipeline_artifacts/diagnostics/training_curves_artifacts.png",
+      "calibration_reliability": "pipeline_artifacts/diagnostics/calibration_reliability_diagram.png",
+      "bayesian_coverage": "pipeline_artifacts/diagnostics/bayesian_coverage_efficiency.png",
+      "confusion_by_energy": "pipeline_artifacts/diagnostics/particle_confusion_by_energy.png"
+    },
+    "W8": {
+      "ablation": "pipeline_artifacts/diagnostics/feature_ablation_results.png",
+      "pfi": "pipeline_artifacts/diagnostics/permutation_importance_all_tasks.png"
+    },
+    "W5": {
+      "shap_sequence": "pipeline_artifacts/diagnostics/shap_sequence_summary.png",
+      "shap_global": "pipeline_artifacts/diagnostics/shap_global_features.png"
+    }
+  }
+}

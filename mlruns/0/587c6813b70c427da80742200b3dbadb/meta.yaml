@@ -1,0 +1,15 @@
+artifact_uri: file:///d:/OneDrive%20-%20Universidad%20T%C3%A9cnica%20Federico%20Santa%20Mar%C3%ADa/CONDOR_OD/Tesis/CONDOR_MCDropout_XAI/mlruns/0/587c6813b70c427da80742200b3dbadb/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 587c6813b70c427da80742200b3dbadb
+run_name: capable-auk-759
+run_uuid: 587c6813b70c427da80742200b3dbadb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1781844898568
+status: 1
+tags: []
+user_id: alanz
