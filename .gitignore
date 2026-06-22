@@ -20,3 +20,7 @@ processed_all_data.pkl
 
 # Ignorar logs
 *.log
+
+#Ignorar archivos de configuración de VSCode y la carpeta de mlruns
+.vscode/
+mlruns/
